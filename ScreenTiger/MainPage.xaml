@@ -2,7 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ScreenTiger.MainPage"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PremiumBackground}">
 
     <Grid Padding="24">
         <Border
@@ -25,7 +26,8 @@
                     HorizontalOptions="Center"
                     SemanticProperties.HeadingLevel="Level1"
                     Style="{StaticResource Headline}"
-                    Text="ScreenTiger" />
+                    Text="ScreenTiger"
+                    TextColor="{StaticResource PremiumGoldSoft}" />
 
                 <Label
                     HorizontalOptions="Center"
@@ -36,7 +38,11 @@
                 <Button
                     Clicked="OnStartRecordingClicked"
                     HorizontalOptions="Fill"
-                    Text="Start Recording" />
+                    Text="Start Recording"
+                    BackgroundColor="{StaticResource PremiumSurface}"
+                    BorderColor="{StaticResource PremiumGold}"
+                    BorderWidth="1"
+                    TextColor="{StaticResource PremiumGold}" />
 
                 <Label
                     FontSize="12"
