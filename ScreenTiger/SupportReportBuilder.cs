@@ -11,7 +11,10 @@ public static class SupportReportBuilder
         bool? usedMicrophone,
         string? savedToLocation = null,
         string? publicContentUri = null,
-        string? exportWarning = null)
+        string? exportWarning = null,
+        string? mp4Location = null,
+        string? zipPackageFileName = null,
+        string? zipLocation = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
@@ -37,7 +40,10 @@ public static class SupportReportBuilder
             $"Saved file name: {fileName}",
             $"Saved file path: {filePath}",
             $"Saved to: {(string.IsNullOrWhiteSpace(savedToLocation) ? "Unknown" : savedToLocation)}",
+            $"MP4 location: {(string.IsNullOrWhiteSpace(mp4Location) ? "Unknown" : mp4Location)}",
             $"Public content URI: {(string.IsNullOrWhiteSpace(publicContentUri) ? "Unavailable" : publicContentUri)}",
+            $"ZIP package: {(string.IsNullOrWhiteSpace(zipPackageFileName) ? "Not created" : zipPackageFileName)}",
+            $"ZIP location: {(string.IsNullOrWhiteSpace(zipLocation) ? "Unknown" : zipLocation)}",
             $"Export warning: {(string.IsNullOrWhiteSpace(exportWarning) ? "None" : exportWarning)}",
             $"File size: {fileSizeText}",
             $"Duration: {durationText}",

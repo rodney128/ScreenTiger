@@ -9,6 +9,7 @@ public partial class MainPage : ContentPage
     private readonly ScreenRecordingController _recordingController = new();
     private readonly RecordingFileViewer _recordingFileViewer = new();
     private readonly AiAssistantLauncher _aiAssistantLauncher = new();
+    private readonly RecordingPackageBuilder _recordingPackageBuilder = new();
     private readonly MainPageViewState _viewState = new();
 
     public MainPage()
@@ -61,7 +62,7 @@ public partial class MainPage : ContentPage
     {
         if (string.IsNullOrWhiteSpace(_viewState.SavedFilePath))
         {
-            await DisplayAlertAsync("ScreenTiger", "No saved recording is available to send.", "OK");
+            await DisplayAlertAsync("ScreenTiger", "The saved MP4 could not be found. Record again and try Open ChatGPT.", "OK");
             return;
         }
 
@@ -71,13 +72,19 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        string packageFileName = $"ScreenTiger_Package_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip";
+        const string packageDisplayFolder = "Movies/ScreenTiger";
+
         string reportText = SupportReportBuilder.BuildCompactReport(
             _viewState.SavedFilePath,
             _viewState.SavedDuration,
             _viewState.SavedUsedMicrophone,
             _viewState.PublicDisplayFolder,
             _viewState.PublicContentUri,
-            _viewState.ExportWarningMessage);
+            _viewState.ExportWarningMessage,
+            "Movies/ScreenTiger",
+            packageFileName,
+            packageDisplayFolder);
 
         try
         {
@@ -89,8 +96,28 @@ public partial class MainPage : ContentPage
             return;
         }
 
+        var packageResult = await _recordingPackageBuilder.CreatePackageAsync(
+            _viewState.SavedFilePath,
+            reportText,
+            packageFileName,
+            CancellationToken.None);
+
         var sendResult = await _aiAssistantLauncher.OpenChatGptAsync(_viewState.SavedFilePath, reportText, CancellationToken.None);
-        await DisplayAlertAsync("ScreenTiger", sendResult.Message, "OK");
+
+        string userMessage = sendResult.Outcome switch
+        {
+            AiAssistantLaunchOutcome.OpenedChatGpt => packageResult.IsSuccess
+                ? "ChatGPT opened. The AI report was copied to your clipboard. A recording package ZIP was saved to Movies/ScreenTiger."
+                : "ChatGPT opened. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package.",
+            AiAssistantLaunchOutcome.ChatGptNotInstalled => packageResult.IsSuccess
+                ? "ChatGPT is not installed. The AI report was copied and the recording package was saved to Movies/ScreenTiger."
+                : "ChatGPT is not installed. The AI report was copied, but ScreenTiger could not create the ZIP package.",
+            _ => packageResult.IsSuccess
+                ? "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. A recording package ZIP was saved to Movies/ScreenTiger."
+                : "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package."
+        };
+
+        await DisplayAlertAsync("ScreenTiger", userMessage, "OK");
     }
 
     private async Task StartRecordingAsync()
