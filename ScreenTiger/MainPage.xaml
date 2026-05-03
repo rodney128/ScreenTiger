@@ -5,7 +5,8 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="#0F0F12">
 
-    <Grid Padding="24">
+    <Grid Padding="24"
+          BackgroundColor="#0F0F12">
         <Border
             BackgroundColor="#17171C"
             HorizontalOptions="Fill"
@@ -15,7 +16,8 @@
             VerticalOptions="Center">
             <VerticalStackLayout
                 Spacing="14"
-                VerticalOptions="Center">
+                VerticalOptions="Center"
+                BackgroundColor="#17171C">
                 <Image
                     Aspect="AspectFit"
                     HeightRequest="128"
@@ -25,14 +27,12 @@
                 <Label
                     HorizontalOptions="Center"
                     SemanticProperties.HeadingLevel="Level1"
-                    Style="{StaticResource Headline}"
                     Text="ScreenTiger"
                     TextColor="#E6C76A" />
 
                 <Label
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
-                    Style="{StaticResource SubHeadline}"
                     Text="Record your screen and package the result for AI review."
                     TextColor="#F5F2E8" />
 
