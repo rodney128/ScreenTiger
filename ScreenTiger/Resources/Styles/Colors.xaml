@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
@@ -27,6 +27,14 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <Color x:Key="PremiumBackground">#0F0F12</Color>
+    <Color x:Key="PremiumSurface">#17171C</Color>
+    <Color x:Key="PremiumGold">#D4AF37</Color>
+    <Color x:Key="PremiumGoldSoft">#E6C76A</Color>
+    <Color x:Key="PremiumTextPrimary">#F5F2E8</Color>
+    <Color x:Key="PremiumTextSecondary">#C9C1AE</Color>
+    <Color x:Key="PremiumBorderMuted">#3A3320</Color>
+
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
@@ -41,4 +49,12 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <SolidColorBrush x:Key="PremiumBackgroundBrush" Color="{StaticResource PremiumBackground}"/>
+    <SolidColorBrush x:Key="PremiumSurfaceBrush" Color="{StaticResource PremiumSurface}"/>
+    <SolidColorBrush x:Key="PremiumGoldBrush" Color="{StaticResource PremiumGold}"/>
+    <SolidColorBrush x:Key="PremiumGoldSoftBrush" Color="{StaticResource PremiumGoldSoft}"/>
+    <SolidColorBrush x:Key="PremiumTextPrimaryBrush" Color="{StaticResource PremiumTextPrimary}"/>
+    <SolidColorBrush x:Key="PremiumTextSecondaryBrush" Color="{StaticResource PremiumTextSecondary}"/>
+    <SolidColorBrush x:Key="PremiumBorderMutedBrush" Color="{StaticResource PremiumBorderMuted}"/>
 </ResourceDictionary>

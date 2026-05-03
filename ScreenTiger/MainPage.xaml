@@ -5,37 +5,47 @@
              Shell.NavBarIsVisible="False">
 
     <Grid Padding="24">
-        <VerticalStackLayout
-            VerticalOptions="Center"
-            Spacing="14">
-            <Image
-                Source="tigerlogo.png"
-                HeightRequest="128"
-                Aspect="AspectFit" />
+        <Border
+            BackgroundColor="{StaticResource PremiumSurface}"
+            HorizontalOptions="Fill"
+            Padding="20"
+            Stroke="{StaticResource PremiumBorderMuted}"
+            StrokeShape="RoundRectangle 18"
+            VerticalOptions="Center">
+            <VerticalStackLayout
+                Spacing="14"
+                VerticalOptions="Center">
+                <Image
+                    Aspect="AspectFit"
+                    HeightRequest="128"
+                    HorizontalOptions="Center"
+                    Source="tigerlogo.png" />
 
-            <Label
-                Text="ScreenTiger"
-                Style="{StaticResource Headline}"
-                HorizontalOptions="Center"
-                SemanticProperties.HeadingLevel="Level1" />
+                <Label
+                    HorizontalOptions="Center"
+                    SemanticProperties.HeadingLevel="Level1"
+                    Style="{StaticResource Headline}"
+                    Text="ScreenTiger" />
 
-            <Label
-                Text="Record your screen and package the result for AI review."
-                Style="{StaticResource SubHeadline}"
-                HorizontalOptions="Center"
-                HorizontalTextAlignment="Center" />
+                <Label
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    Style="{StaticResource SubHeadline}"
+                    Text="Record your screen and package the result for AI review." />
 
-            <Button
-                Text="Start Recording"
-                Clicked="OnStartRecordingClicked"
-                HorizontalOptions="Fill" />
+                <Button
+                    Clicked="OnStartRecordingClicked"
+                    HorizontalOptions="Fill"
+                    Text="Start Recording" />
 
-            <Label
-                Text="Microphone audio is included when permission is granted. Internal app audio is not captured."
-                FontSize="12"
-                HorizontalTextAlignment="Center"
-                LineBreakMode="WordWrap" />
-        </VerticalStackLayout>
+                <Label
+                    FontSize="12"
+                    HorizontalTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    Text="Microphone audio is included when permission is granted. Internal app audio is not captured."
+                    TextColor="{StaticResource PremiumTextSecondary}" />
+            </VerticalStackLayout>
+        </Border>
     </Grid>
 
 </ContentPage>
