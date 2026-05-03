@@ -82,7 +82,7 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        var sendResult = await _aiAssistantLauncher.SendToChatGptAsync(_viewState.SavedFilePath, reportText, CancellationToken.None);
+        var sendResult = await _aiAssistantLauncher.OpenChatGptAsync(_viewState.SavedFilePath, reportText, CancellationToken.None);
         await DisplayAlertAsync("ScreenTiger", sendResult.Message, "OK");
     }
 

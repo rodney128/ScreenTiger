@@ -9,19 +9,20 @@ public sealed partial class AiAssistantLauncher
 {
     private const string ChatGptPackageName = "com.openai.chatgpt";
 
-    public partial Task<AiAssistantLaunchResult> SendToChatGptAsync(string filePath, string reportText, CancellationToken cancellationToken)
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string filePath, string reportText, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         ArgumentException.ThrowIfNullOrWhiteSpace(reportText);
 
         var context = Platform.AppContext;
+        var packageManager = context.PackageManager;
         var authority = $"{AppInfo.Current.PackageName}.fileprovider";
         var fileUri = AndroidX.Core.Content.FileProvider.GetUriForFile(context, authority, new Java.IO.File(filePath));
 
         var targetedIntent = CreateBaseSendIntent(fileUri, reportText);
         targetedIntent.SetPackage(ChatGptPackageName);
 
-        if (targetedIntent.ResolveActivity(context.PackageManager) is not null)
+        if (targetedIntent.ResolveActivity(packageManager) is not null)
         {
             try
             {
@@ -33,20 +34,23 @@ public sealed partial class AiAssistantLauncher
             }
         }
 
-        var shareIntent = CreateBaseSendIntent(fileUri, reportText);
-        var chooser = Intent.CreateChooser(shareIntent, "Send recording and report");
-        chooser.AddFlags(ActivityFlags.NewTask);
-
-        if (chooser.ResolveActivity(context.PackageManager) is not null)
+        var launchIntent = packageManager?.GetLaunchIntentForPackage(ChatGptPackageName);
+        if (launchIntent is not null)
         {
             try
             {
-                context.StartActivity(chooser);
-                return Task.FromResult(AiAssistantLaunchResult.ShareSheetOpened());
+                launchIntent.AddFlags(ActivityFlags.NewTask);
+                context.StartActivity(launchIntent);
+                return Task.FromResult(AiAssistantLaunchResult.ChatGptDirectOpened());
             }
             catch (ActivityNotFoundException)
             {
             }
+        }
+
+        if (launchIntent is null)
+        {
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptNotInstalled());
         }
 
         return Task.FromResult(AiAssistantLaunchResult.Failure());

@@ -97,7 +97,7 @@
                     HorizontalOptions="Fill"
                     IsVisible="{Binding ShowSendToChatGptButton}"
                     IsEnabled="{Binding IsSendToChatGptButtonEnabled}"
-                    Text="Send to ChatGPT"
+                    Text="Open ChatGPT"
                     BackgroundColor="#17171C"
                     BorderColor="#D4AF37"
                     BorderWidth="1"
