@@ -36,6 +36,8 @@ public sealed class ScreenRecordService : Service
     private string? _savedFilePath;
 
     private MediaProjection? _mediaProjection;
+    private MediaProjection.Callback? _mediaProjectionCallback;
+    private Handler? _mediaProjectionCallbackHandler;
     private MediaRecorder? _mediaRecorder;
     private VirtualDisplay? _virtualDisplay;
 
@@ -140,18 +142,41 @@ public sealed class ScreenRecordService : Service
     private void HandleStop(Intent intent)
     {
         string requestId = intent.GetStringExtra(ExtraRequestId) ?? string.Empty;
+        FinalizeRecording(requestId, notifyController: true);
+    }
 
+    private void HandleProjectionStoppedBySystem()
+    {
+        string requestId;
+        lock (_sync)
+        {
+            requestId = _activeSessionRequestId ?? string.Empty;
+        }
+
+        FinalizeRecording(requestId, notifyController: false);
+    }
+
+    private void FinalizeRecording(string requestId, bool notifyController)
+    {
         lock (_sync)
         {
             if (!_isRecording)
             {
-                ScreenRecordingController.NotifyStopFailed(requestId, "Recording is not currently running.");
+                if (notifyController)
+                {
+                    ScreenRecordingController.NotifyStopFailed(requestId, "Recording is not currently running.");
+                }
+
                 return;
             }
 
             if (_isFinalizing)
             {
-                ScreenRecordingController.NotifyStopFailed(requestId, "Recording finalization is already in progress.");
+                if (notifyController)
+                {
+                    ScreenRecordingController.NotifyStopFailed(requestId, "Recording finalization is already in progress.");
+                }
+
                 return;
             }
 
@@ -162,9 +187,9 @@ public sealed class ScreenRecordService : Service
         {
             _mediaRecorder?.Stop();
         }
-        catch
+        catch (Exception ex)
         {
-            // Stop can throw if no frames were written; continue cleanup and report best available output.
+            System.Diagnostics.Debug.WriteLine($"MediaRecorder stop failed: {ex.Message}");
         }
 
         var duration = DateTimeOffset.UtcNow - _startedAtUtc;
@@ -174,10 +199,18 @@ public sealed class ScreenRecordService : Service
         {
             _isRecording = false;
             _isFinalizing = false;
+            _activeSessionRequestId = null;
+            _microphoneEnabled = false;
+            _startedAtUtc = DateTimeOffset.MinValue;
         }
 
-        StopForeground(StopForegroundFlags.Remove);
-        ScreenRecordingController.NotifyStopCompleted(requestId, _savedFilePath, duration);
+        StopForegroundCompat();
+
+        if (notifyController)
+        {
+            ScreenRecordingController.NotifyStopCompleted(requestId, _savedFilePath, duration);
+        }
+
         StopSelf();
     }
 
@@ -194,6 +227,10 @@ public sealed class ScreenRecordService : Service
         {
             throw new InvalidOperationException("MediaProjection permission was not granted by Android.");
         }
+
+        _mediaProjectionCallbackHandler = new Handler(Looper.MainLooper);
+        _mediaProjectionCallback = new ScreenMediaProjectionCallback(this);
+        _mediaProjection.RegisterCallback(_mediaProjectionCallback, _mediaProjectionCallbackHandler);
 
         var metrics = Resources?.DisplayMetrics;
         if (metrics is null)
@@ -245,6 +282,18 @@ public sealed class ScreenRecordService : Service
 
         _savedFilePath = outputFilePath;
         _mediaRecorder.Start();
+    }
+
+    private void StopForegroundCompat()
+    {
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
+        {
+            StopForeground(StopForegroundFlags.Remove);
+        }
+        else
+        {
+            StopForeground(true);
+        }
     }
 
     private string CreateOutputFilePath()
@@ -330,6 +379,21 @@ public sealed class ScreenRecordService : Service
         _mediaRecorder?.Dispose();
         _mediaRecorder = null;
 
+        if (_mediaProjection is not null && _mediaProjectionCallback is not null)
+        {
+            try
+            {
+                _mediaProjection.UnregisterCallback(_mediaProjectionCallback);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MediaProjection callback unregister failed: {ex.Message}");
+            }
+        }
+
+        _mediaProjectionCallback = null;
+        _mediaProjectionCallbackHandler = null;
+
         try
         {
             _mediaProjection?.Stop();
@@ -341,6 +405,24 @@ public sealed class ScreenRecordService : Service
 
         _mediaProjection?.Dispose();
         _mediaProjection = null;
+    }
+
+    private sealed class ScreenMediaProjectionCallback : MediaProjection.Callback
+    {
+        private readonly WeakReference<ScreenRecordService> _serviceReference;
+
+        public ScreenMediaProjectionCallback(ScreenRecordService service)
+        {
+            _serviceReference = new WeakReference<ScreenRecordService>(service);
+        }
+
+        public override void OnStop()
+        {
+            if (_serviceReference.TryGetTarget(out var service))
+            {
+                service.HandleProjectionStoppedBySystem();
+            }
+        }
     }
 
     protected override void Dispose(bool disposing)

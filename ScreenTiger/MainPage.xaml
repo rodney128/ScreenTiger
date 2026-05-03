@@ -95,6 +95,7 @@
                 <Label
                     FontSize="12"
                     HorizontalTextAlignment="Center"
+                    IsVisible="{Binding ShowFooterMicrophoneNote}"
                     LineBreakMode="WordWrap"
                     Text="Microphone audio is included when permission is granted. Internal app audio is not captured."
                     TextColor="#C9C1AE" />

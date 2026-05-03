@@ -112,6 +112,7 @@ public partial class MainPage : ContentPage
             showDualActions: false,
             isBusyState: false,
             showMicrophoneStatus: false,
+            showFooterMicrophoneNote: true,
             microphoneStatusText: string.Empty);
     }
 
@@ -127,6 +128,7 @@ public partial class MainPage : ContentPage
             showDualActions: true,
             isBusyState: false,
             showMicrophoneStatus: false,
+            showFooterMicrophoneNote: false,
             microphoneStatusText: string.Empty);
     }
 
@@ -142,6 +144,7 @@ public partial class MainPage : ContentPage
             showDualActions: false,
             isBusyState: true,
             showMicrophoneStatus: false,
+            showFooterMicrophoneNote: true,
             microphoneStatusText: string.Empty);
     }
 
@@ -157,6 +160,7 @@ public partial class MainPage : ContentPage
             showDualActions: false,
             isBusyState: false,
             showMicrophoneStatus: true,
+            showFooterMicrophoneNote: true,
             microphoneStatusText: microphoneEnabled ? "Microphone: On" : "Microphone: Off — video only");
     }
 
@@ -172,6 +176,7 @@ public partial class MainPage : ContentPage
             showDualActions: false,
             isBusyState: true,
             showMicrophoneStatus: false,
+            showFooterMicrophoneNote: true,
             microphoneStatusText: string.Empty);
     }
 
@@ -191,6 +196,7 @@ public partial class MainPage : ContentPage
             showDualActions: false,
             isBusyState: false,
             showMicrophoneStatus: false,
+            showFooterMicrophoneNote: true,
             microphoneStatusText: string.Empty);
     }
 
@@ -205,6 +211,7 @@ public partial class MainPage : ContentPage
         private bool _showDualActionButtons;
         private bool _isBusyState;
         private bool _showMicrophoneStatus;
+        private bool _showFooterMicrophoneNote = true;
         private string _microphoneStatusText = string.Empty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -277,6 +284,12 @@ public partial class MainPage : ContentPage
             private set => SetProperty(ref _microphoneStatusText, value);
         }
 
+        public bool ShowFooterMicrophoneNote
+        {
+            get => _showFooterMicrophoneNote;
+            private set => SetProperty(ref _showFooterMicrophoneNote, value);
+        }
+
         public void SetState(
             RecordingUiState state,
             string title,
@@ -287,6 +300,7 @@ public partial class MainPage : ContentPage
             bool showDualActions,
             bool isBusyState,
             bool showMicrophoneStatus,
+            bool showFooterMicrophoneNote,
             string microphoneStatusText)
         {
             CurrentState = state;
@@ -298,6 +312,7 @@ public partial class MainPage : ContentPage
             ShowDualActionButtons = showDualActions;
             IsBusyState = isBusyState;
             ShowMicrophoneStatus = showMicrophoneStatus;
+            ShowFooterMicrophoneNote = showFooterMicrophoneNote;
             MicrophoneStatusText = microphoneStatusText;
         }
 
