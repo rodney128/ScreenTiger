@@ -33,13 +33,60 @@
                 <Label
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
-                    Text="Record your screen and package the result for AI review."
+                    Text="{Binding TitleText}"
                     TextColor="#F5F2E8" />
 
+                <Label
+                    HorizontalOptions="Center"
+                    HorizontalTextAlignment="Center"
+                    IsVisible="{Binding HasDetailText}"
+                    LineBreakMode="WordWrap"
+                    Text="{Binding DetailText}"
+                    TextColor="#F5F2E8" />
+
+                <ActivityIndicator
+                    Color="#D4AF37"
+                    HorizontalOptions="Center"
+                    IsRunning="{Binding IsBusyState}"
+                    IsVisible="{Binding IsBusyState}" />
+
+                <Label
+                    FontSize="12"
+                    HorizontalTextAlignment="Center"
+                    IsVisible="{Binding ShowMicrophoneStatus}"
+                    Text="{Binding MicrophoneStatusText}"
+                    TextColor="#C9C1AE" />
+
+                <Grid ColumnDefinitions="*,*"
+                      ColumnSpacing="12"
+                      IsVisible="{Binding ShowDualActionButtons}">
+                    <Button
+                        Grid.Column="0"
+                        Clicked="OnContinueClicked"
+                        HorizontalOptions="Fill"
+                        Text="Continue"
+                        BackgroundColor="#17171C"
+                        BorderColor="#D4AF37"
+                        BorderWidth="1"
+                        TextColor="#D4AF37" />
+
+                    <Button
+                        Grid.Column="1"
+                        Clicked="OnCancelSetupClicked"
+                        HorizontalOptions="Fill"
+                        Text="Cancel"
+                        BackgroundColor="#17171C"
+                        BorderColor="#D4AF37"
+                        BorderWidth="1"
+                        TextColor="#D4AF37" />
+                </Grid>
+
                 <Button
-                    Clicked="OnStartRecordingClicked"
+                    Clicked="OnPrimaryActionClicked"
                     HorizontalOptions="Fill"
-                    Text="Start Recording"
+                    IsVisible="{Binding ShowPrimaryButton}"
+                    IsEnabled="{Binding IsPrimaryButtonEnabled}"
+                    Text="{Binding PrimaryButtonText}"
                     BackgroundColor="#17171C"
                     BorderColor="#D4AF37"
                     BorderWidth="1"
