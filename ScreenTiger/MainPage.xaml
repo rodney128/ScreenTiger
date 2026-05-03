@@ -3,14 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ScreenTiger.MainPage"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource PremiumBackground}">
+             BackgroundColor="#0F0F12">
 
     <Grid Padding="24">
         <Border
-            BackgroundColor="{StaticResource PremiumSurface}"
+            BackgroundColor="#17171C"
             HorizontalOptions="Fill"
             Padding="20"
-            Stroke="{StaticResource PremiumBorderMuted}"
+            Stroke="#3A3320"
             StrokeShape="RoundRectangle 18"
             VerticalOptions="Center">
             <VerticalStackLayout
@@ -27,29 +27,30 @@
                     SemanticProperties.HeadingLevel="Level1"
                     Style="{StaticResource Headline}"
                     Text="ScreenTiger"
-                    TextColor="{StaticResource PremiumGoldSoft}" />
+                    TextColor="#E6C76A" />
 
                 <Label
                     HorizontalOptions="Center"
                     HorizontalTextAlignment="Center"
                     Style="{StaticResource SubHeadline}"
-                    Text="Record your screen and package the result for AI review." />
+                    Text="Record your screen and package the result for AI review."
+                    TextColor="#F5F2E8" />
 
                 <Button
                     Clicked="OnStartRecordingClicked"
                     HorizontalOptions="Fill"
                     Text="Start Recording"
-                    BackgroundColor="{StaticResource PremiumSurface}"
-                    BorderColor="{StaticResource PremiumGold}"
+                    BackgroundColor="#17171C"
+                    BorderColor="#D4AF37"
                     BorderWidth="1"
-                    TextColor="{StaticResource PremiumGold}" />
+                    TextColor="#D4AF37" />
 
                 <Label
                     FontSize="12"
                     HorizontalTextAlignment="Center"
                     LineBreakMode="WordWrap"
                     Text="Microphone audio is included when permission is granted. Internal app audio is not captured."
-                    TextColor="{StaticResource PremiumTextSecondary}" />
+                    TextColor="#C9C1AE" />
             </VerticalStackLayout>
         </Border>
     </Grid>
