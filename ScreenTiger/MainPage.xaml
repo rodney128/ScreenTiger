@@ -82,6 +82,17 @@
                 </Grid>
 
                 <Button
+                    Clicked="OnViewMp4Clicked"
+                    HorizontalOptions="Fill"
+                    IsVisible="{Binding ShowViewMp4Button}"
+                    IsEnabled="{Binding IsViewMp4ButtonEnabled}"
+                    Text="View MP4"
+                    BackgroundColor="#17171C"
+                    BorderColor="#D4AF37"
+                    BorderWidth="1"
+                    TextColor="#D4AF37" />
+
+                <Button
                     Clicked="OnPrimaryActionClicked"
                     HorizontalOptions="Fill"
                     IsVisible="{Binding ShowPrimaryButton}"

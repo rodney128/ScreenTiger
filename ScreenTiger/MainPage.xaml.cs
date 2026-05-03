@@ -7,6 +7,7 @@ namespace ScreenTiger;
 public partial class MainPage : ContentPage
 {
     private readonly ScreenRecordingController _recordingController = new();
+    private readonly RecordingFileViewer _recordingFileViewer = new();
     private readonly MainPageViewState _viewState = new();
 
     public MainPage()
@@ -40,6 +41,15 @@ public partial class MainPage : ContentPage
     {
         SetIdleState();
         await DisplayAlertAsync("ScreenTiger", "Screen capture setup cancelled.", "OK");
+    }
+
+    private async void OnViewMp4Clicked(object? sender, EventArgs e)
+    {
+        var openResult = await _recordingFileViewer.OpenSavedMp4Async(_viewState.SavedFilePath);
+        if (!openResult.IsSuccess)
+        {
+            await DisplayAlertAsync("ScreenTiger", openResult.ErrorMessage ?? "Unable to open the saved MP4.", "OK");
+        }
     }
 
     private async Task StartRecordingAsync()
@@ -106,6 +116,9 @@ public partial class MainPage : ContentPage
             RecordingUiState.Idle,
             "Record your screen and package the result for AI review.",
             string.Empty,
+            savedFilePath: null,
+            showViewMp4Button: false,
+            isViewMp4ButtonEnabled: false,
             "Start Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
@@ -122,6 +135,9 @@ public partial class MainPage : ContentPage
             RecordingUiState.PrePermission,
             "Android will ask for permission to capture your screen.",
             "Microphone audio is included when permission is granted. Internal app audio is not captured.",
+            savedFilePath: null,
+            showViewMp4Button: false,
+            isViewMp4ButtonEnabled: false,
             string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
@@ -138,6 +154,9 @@ public partial class MainPage : ContentPage
             RecordingUiState.Starting,
             "Preparing Android screen capture...",
             string.Empty,
+            savedFilePath: null,
+            showViewMp4Button: false,
+            isViewMp4ButtonEnabled: false,
             string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
@@ -154,6 +173,9 @@ public partial class MainPage : ContentPage
             RecordingUiState.Recording,
             "Recording in progress",
             "ScreenTiger is recording your screen.",
+            savedFilePath: null,
+            showViewMp4Button: false,
+            isViewMp4ButtonEnabled: false,
             "Stop Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
@@ -170,6 +192,9 @@ public partial class MainPage : ContentPage
             RecordingUiState.Stopping,
             "Stopping recording...",
             "Finalizing video file.",
+            savedFilePath: _viewState.SavedFilePath,
+            showViewMp4Button: false,
+            isViewMp4ButtonEnabled: false,
             string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
@@ -183,13 +208,18 @@ public partial class MainPage : ContentPage
     private void SetSavedState(ScreenRecordingStopResult stopResult)
     {
         string fileName = stopResult.SavedFilePath is null
-            ? "Saved to Movies/ScreenTiger"
+            ? "Saved file: Unavailable"
             : $"Saved file: {Path.GetFileName(stopResult.SavedFilePath)}";
+
+        bool hasSavedPath = !string.IsNullOrWhiteSpace(stopResult.SavedFilePath);
 
         _viewState.SetState(
             RecordingUiState.Saved,
             "Recording saved",
             fileName,
+            savedFilePath: stopResult.SavedFilePath,
+            showViewMp4Button: hasSavedPath,
+            isViewMp4ButtonEnabled: hasSavedPath,
             "Start Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
@@ -205,6 +235,9 @@ public partial class MainPage : ContentPage
         private RecordingUiState _currentState;
         private string _titleText = string.Empty;
         private string _detailText = string.Empty;
+        private string? _savedFilePath;
+        private bool _showViewMp4Button;
+        private bool _isViewMp4ButtonEnabled;
         private string _primaryButtonText = string.Empty;
         private bool _showPrimaryButton;
         private bool _isPrimaryButtonEnabled;
@@ -246,6 +279,24 @@ public partial class MainPage : ContentPage
         {
             get => _primaryButtonText;
             private set => SetProperty(ref _primaryButtonText, value);
+        }
+
+        public string? SavedFilePath
+        {
+            get => _savedFilePath;
+            private set => SetProperty(ref _savedFilePath, value);
+        }
+
+        public bool ShowViewMp4Button
+        {
+            get => _showViewMp4Button;
+            private set => SetProperty(ref _showViewMp4Button, value);
+        }
+
+        public bool IsViewMp4ButtonEnabled
+        {
+            get => _isViewMp4ButtonEnabled;
+            private set => SetProperty(ref _isViewMp4ButtonEnabled, value);
         }
 
         public bool ShowPrimaryButton
@@ -294,6 +345,9 @@ public partial class MainPage : ContentPage
             RecordingUiState state,
             string title,
             string detail,
+            string? savedFilePath,
+            bool showViewMp4Button,
+            bool isViewMp4ButtonEnabled,
             string primaryButtonText,
             bool showPrimaryButton,
             bool isPrimaryButtonEnabled,
@@ -306,6 +360,9 @@ public partial class MainPage : ContentPage
             CurrentState = state;
             TitleText = title;
             DetailText = detail;
+            SavedFilePath = savedFilePath;
+            ShowViewMp4Button = showViewMp4Button;
+            IsViewMp4ButtonEnabled = isViewMp4ButtonEnabled;
             PrimaryButtonText = primaryButtonText;
             ShowPrimaryButton = showPrimaryButton;
             IsPrimaryButtonEnabled = isPrimaryButtonEnabled;
