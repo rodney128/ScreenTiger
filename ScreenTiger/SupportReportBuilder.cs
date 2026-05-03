@@ -5,7 +5,12 @@ namespace ScreenTiger;
 
 public static class SupportReportBuilder
 {
-    public static string BuildCompactReport(string filePath, TimeSpan? duration, bool? usedMicrophone)
+    public static string BuildCompactReport(
+        string filePath,
+        TimeSpan? duration,
+        bool? usedMicrophone,
+        string? savedToLocation = null,
+        string? publicContentUri = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
@@ -30,6 +35,8 @@ public static class SupportReportBuilder
             "Recording state/result: Saved",
             $"Saved file name: {fileName}",
             $"Saved file path: {filePath}",
+            $"Saved to: {(string.IsNullOrWhiteSpace(savedToLocation) ? "Unknown" : savedToLocation)}",
+            $"Public content URI: {(string.IsNullOrWhiteSpace(publicContentUri) ? "Unavailable" : publicContentUri)}",
             $"File size: {fileSizeText}",
             $"Duration: {durationText}",
             $"Audio mode: {audioMode}",

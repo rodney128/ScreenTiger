@@ -5,6 +5,7 @@ using Android.Media;
 using Android.Media.Projection;
 using Android.OS;
 using Android.Runtime;
+using Android.Provider;
 using Java.IO;
 using Application = Android.App.Application;
 using Environment = Android.OS.Environment;
@@ -33,7 +34,7 @@ public sealed class ScreenRecordService : Service
     private bool _microphoneEnabled;
     private string? _activeSessionRequestId;
     private DateTimeOffset _startedAtUtc;
-    private string? _savedFilePath;
+    private RecordingExportResult? _exportResult;
 
     private MediaProjection? _mediaProjection;
     private MediaProjection.Callback? _mediaProjectionCallback;
@@ -193,6 +194,11 @@ public sealed class ScreenRecordService : Service
         }
 
         var duration = DateTimeOffset.UtcNow - _startedAtUtc;
+        if (_exportResult?.PrivateFilePath is { Length: > 0 } privateFilePath)
+        {
+            _exportResult = ExportToPublicVideos(privateFilePath);
+        }
+
         CleanupResources();
 
         lock (_sync)
@@ -208,7 +214,15 @@ public sealed class ScreenRecordService : Service
 
         if (notifyController)
         {
-            ScreenRecordingController.NotifyStopCompleted(requestId, _savedFilePath, duration);
+            ScreenRecordingController.NotifyStopCompleted(
+                requestId,
+                _exportResult?.PrivateFilePath,
+                _exportResult?.PublicContentUri,
+                _exportResult?.PublicDisplayFolder,
+                _exportResult?.FileName,
+                _exportResult?.PublicExportSucceeded ?? false,
+                _exportResult?.ErrorMessage,
+                duration);
         }
 
         StopSelf();
@@ -239,6 +253,13 @@ public sealed class ScreenRecordService : Service
         }
 
         var outputFilePath = CreateOutputFilePath();
+        _exportResult = new RecordingExportResult(
+            false,
+            outputFilePath,
+            null,
+            "Movies/ScreenTiger",
+            Path.GetFileName(outputFilePath),
+            null);
 
         _mediaRecorder = new MediaRecorder(this);
         _mediaRecorder.SetVideoSource(VideoSource.Surface);
@@ -280,7 +301,7 @@ public sealed class ScreenRecordService : Service
             throw new InvalidOperationException("Unable to create virtual display for recording.");
         }
 
-        _savedFilePath = outputFilePath;
+        _exportResult = null;
         _mediaRecorder.Start();
     }
 
@@ -405,6 +426,76 @@ public sealed class ScreenRecordService : Service
 
         _mediaProjection?.Dispose();
         _mediaProjection = null;
+    }
+
+    private RecordingExportResult ExportToPublicVideos(string privateFilePath)
+    {
+        var privateFile = new Java.IO.File(privateFilePath);
+        if (!privateFile.Exists())
+        {
+            return RecordingExportResult.Failed(privateFilePath, "Movies/ScreenTiger", Path.GetFileName(privateFilePath), "Private recording file was not found for export.");
+        }
+
+        string fileName = Path.GetFileName(privateFilePath);
+        string publicFolder = "Movies/ScreenTiger";
+        var contentValues = new ContentValues();
+        contentValues.Put(MediaStore.MediaColumns.DisplayName, fileName);
+        contentValues.Put(MediaStore.MediaColumns.MimeType, "video/mp4");
+        contentValues.Put(MediaStore.MediaColumns.RelativePath, Path.Combine(Environment.DirectoryMovies, "ScreenTiger"));
+        contentValues.Put(MediaStore.MediaColumns.IsPending, 1);
+
+        var resolver = ContentResolver;
+        var uri = resolver?.Insert(MediaStore.Video.Media.ExternalContentUri, contentValues);
+        if (resolver is null || uri is null)
+        {
+            return RecordingExportResult.Failed(privateFilePath, publicFolder, fileName, "Unable to create MediaStore entry for public export.");
+        }
+
+        try
+        {
+            using var inputStream = System.IO.File.OpenRead(privateFilePath);
+            using var outputStream = resolver.OpenOutputStream(uri, "w");
+            if (outputStream is null)
+            {
+                resolver.Delete(uri, null, null);
+                return RecordingExportResult.Failed(privateFilePath, publicFolder, fileName, "Unable to open MediaStore output stream.");
+            }
+
+            inputStream.CopyTo(outputStream);
+
+            var completeValues = new ContentValues();
+            completeValues.Put(MediaStore.MediaColumns.IsPending, 0);
+            resolver.Update(uri, completeValues, null, null);
+
+            return RecordingExportResult.Success(privateFilePath, uri.ToString(), publicFolder, fileName);
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                resolver.Delete(uri, null, null);
+            }
+            catch
+            {
+            }
+
+            return RecordingExportResult.Failed(privateFilePath, publicFolder, fileName, ex.Message);
+        }
+    }
+
+    private sealed record RecordingExportResult(
+        bool PublicExportSucceeded,
+        string? PrivateFilePath,
+        string? PublicContentUri,
+        string? PublicDisplayFolder,
+        string? FileName,
+        string? ErrorMessage)
+    {
+        public static RecordingExportResult Success(string privateFilePath, string publicContentUri, string publicDisplayFolder, string fileName) =>
+            new(true, privateFilePath, publicContentUri, publicDisplayFolder, fileName, null);
+
+        public static RecordingExportResult Failed(string privateFilePath, string publicDisplayFolder, string fileName, string errorMessage) =>
+            new(false, privateFilePath, null, publicDisplayFolder, fileName, errorMessage);
     }
 
     private sealed class ScreenMediaProjectionCallback : MediaProjection.Callback

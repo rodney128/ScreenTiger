@@ -14,6 +14,33 @@ public sealed partial class RecordingFileViewer
             return Task.FromResult(FileOpenResult.Failure("No saved recording is available to view."));
         }
 
+        if (Uri.TryCreate(filePath, UriKind.Absolute, out var parsedUri) && parsedUri.Scheme.Equals("content", StringComparison.OrdinalIgnoreCase))
+        {
+            var appContext = Platform.AppContext;
+            var contentIntent = new Intent(Intent.ActionView);
+            contentIntent.SetDataAndType(Android.Net.Uri.Parse(filePath), "video/mp4");
+            contentIntent.AddFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.NewTask);
+
+            if (contentIntent.ResolveActivity(appContext.PackageManager) is null)
+            {
+                return Task.FromResult(FileOpenResult.Failure("No video player could open this MP4 on this device."));
+            }
+
+            try
+            {
+                appContext.StartActivity(contentIntent);
+                return Task.FromResult(FileOpenResult.Success());
+            }
+            catch (ActivityNotFoundException)
+            {
+                return Task.FromResult(FileOpenResult.Failure("No video player could open this MP4 on this device."));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(FileOpenResult.Failure($"Unable to open the saved MP4: {ex.Message}"));
+            }
+        }
+
         if (!System.IO.File.Exists(filePath))
         {
             return Task.FromResult(FileOpenResult.Failure("The saved MP4 could not be found. Record again and try View MP4."));

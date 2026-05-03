@@ -154,17 +154,38 @@ public sealed partial class ScreenRecordingController
         }
     }
 
-    internal static void NotifyStopCompleted(string requestId, string? savedFilePath, TimeSpan duration)
+    internal static void NotifyStopCompleted(
+        string requestId,
+        string? privateFilePath,
+        string? publicContentUri,
+        string? publicDisplayFolder,
+        string? fileName,
+        bool publicExportSucceeded,
+        string? publicExportErrorMessage,
+        TimeSpan duration)
     {
         if (PendingStops.TryRemove(requestId, out var completion))
         {
-            if (string.IsNullOrWhiteSpace(savedFilePath))
+            string? effectiveSavedPath = publicExportSucceeded && !string.IsNullOrWhiteSpace(publicContentUri)
+                ? publicContentUri
+                : privateFilePath;
+
+            if (string.IsNullOrWhiteSpace(effectiveSavedPath))
             {
                 completion.TrySetResult(ScreenRecordingStopResult.Failure("Recording stopped but output file path is unavailable."));
                 return;
             }
 
-            completion.TrySetResult(ScreenRecordingStopResult.Success(savedFilePath, duration));
+            completion.TrySetResult(
+                ScreenRecordingStopResult.Success(
+                    effectiveSavedPath,
+                    duration,
+                    privateFilePath,
+                    publicContentUri,
+                    publicDisplayFolder,
+                    fileName,
+                    publicExportSucceeded,
+                    publicExportErrorMessage));
         }
     }
 

@@ -28,10 +28,38 @@ public sealed record ScreenRecordingStartResult(bool IsSuccess, bool IsMicrophon
         new(false, false, errorMessage);
 }
 
-public sealed record ScreenRecordingStopResult(bool IsSuccess, string? SavedFilePath, TimeSpan Duration, string? ErrorMessage = null)
+public sealed record ScreenRecordingStopResult(
+    bool IsSuccess,
+    string? SavedFilePath,
+    TimeSpan Duration,
+    string? ErrorMessage = null,
+    string? PrivateFilePath = null,
+    string? PublicContentUri = null,
+    string? PublicDisplayFolder = null,
+    string? FileName = null,
+    bool PublicExportSucceeded = false,
+    string? PublicExportErrorMessage = null)
 {
-    public static ScreenRecordingStopResult Success(string savedFilePath, TimeSpan duration) =>
-        new(true, savedFilePath, duration);
+    public static ScreenRecordingStopResult Success(
+        string savedFilePath,
+        TimeSpan duration,
+        string? privateFilePath,
+        string? publicContentUri,
+        string? publicDisplayFolder,
+        string? fileName,
+        bool publicExportSucceeded,
+        string? publicExportErrorMessage) =>
+        new(
+            true,
+            savedFilePath,
+            duration,
+            null,
+            privateFilePath,
+            publicContentUri,
+            publicDisplayFolder,
+            fileName,
+            publicExportSucceeded,
+            publicExportErrorMessage);
 
     public static ScreenRecordingStopResult Failure(string errorMessage) =>
         new(false, null, TimeSpan.Zero, errorMessage);
