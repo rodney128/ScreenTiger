@@ -194,9 +194,15 @@ public sealed class ScreenRecordService : Service
         }
 
         var duration = DateTimeOffset.UtcNow - _startedAtUtc;
+        var privatePathBeforeExport = _exportResult?.PrivateFilePath;
+        bool privateFileExistsBeforeExport = !string.IsNullOrWhiteSpace(privatePathBeforeExport) && System.IO.File.Exists(privatePathBeforeExport);
+        System.Diagnostics.Debug.WriteLine($"ScreenTiger export: privatePath='{privatePathBeforeExport}', privateExists={privateFileExistsBeforeExport}");
+
         if (_exportResult?.PrivateFilePath is { Length: > 0 } privateFilePath)
         {
             _exportResult = ExportToPublicVideos(privateFilePath);
+            System.Diagnostics.Debug.WriteLine(
+                $"ScreenTiger export: success={_exportResult.PublicExportSucceeded}, publicUri='{_exportResult.PublicContentUri}', publicFolder='{_exportResult.PublicDisplayFolder}', error='{_exportResult.ErrorMessage}'");
         }
 
         CleanupResources();
@@ -322,14 +328,11 @@ public sealed class ScreenRecordService : Service
         var baseFolder = GetExternalFilesDir(Environment.DirectoryMovies)
             ?? throw new InvalidOperationException("Unable to resolve app-private Movies directory.");
 
-        var screenTigerFolder = new Java.IO.File(baseFolder, "ScreenTiger");
-        if (!screenTigerFolder.Exists() && !screenTigerFolder.Mkdirs())
-        {
-            throw new InvalidOperationException("Unable to create ScreenTiger recording folder.");
-        }
+        string screenTigerFolderPath = System.IO.Path.Combine(baseFolder.AbsolutePath ?? string.Empty, "ScreenTiger");
+        Directory.CreateDirectory(screenTigerFolderPath);
 
         var fileName = $"ScreenTiger_{DateTime.UtcNow:yyyyMMdd_HHmmss}.mp4";
-        return System.IO.Path.Combine(screenTigerFolder.AbsolutePath ?? string.Empty, fileName);
+        return System.IO.Path.Combine(screenTigerFolderPath, fileName);
     }
 
     private Notification BuildNotification()

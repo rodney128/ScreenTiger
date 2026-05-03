@@ -172,7 +172,7 @@ public sealed partial class ScreenRecordingController
 
             if (string.IsNullOrWhiteSpace(effectiveSavedPath))
             {
-                completion.TrySetResult(ScreenRecordingStopResult.Failure("Recording stopped but output file path is unavailable."));
+                completion.TrySetResult(ScreenRecordingStopResult.Failure("Recording stopped, but the MP4 file could not be found."));
                 return;
             }
 

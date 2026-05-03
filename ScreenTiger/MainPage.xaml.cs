@@ -76,7 +76,8 @@ public partial class MainPage : ContentPage
             _viewState.SavedDuration,
             _viewState.SavedUsedMicrophone,
             _viewState.PublicDisplayFolder,
-            _viewState.PublicContentUri);
+            _viewState.PublicContentUri,
+            _viewState.ExportWarningMessage);
 
         try
         {
@@ -162,11 +163,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: null,
             publicContentUri: null,
             publicDisplayFolder: null,
+            exportWarningMessage: null,
             showSendToChatGptButton: false,
             isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
-            "Start Recording",
+            primaryButtonText: "Start Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
             showDualActions: false,
@@ -187,11 +189,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: null,
             publicContentUri: null,
             publicDisplayFolder: null,
+            exportWarningMessage: null,
             showSendToChatGptButton: false,
             isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
-            string.Empty,
+            primaryButtonText: string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
             showDualActions: true,
@@ -212,11 +215,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: null,
             publicContentUri: null,
             publicDisplayFolder: null,
+            exportWarningMessage: null,
             showSendToChatGptButton: false,
             isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
-            string.Empty,
+            primaryButtonText: string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
             showDualActions: false,
@@ -237,11 +241,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: null,
             publicContentUri: null,
             publicDisplayFolder: null,
+            exportWarningMessage: null,
             showSendToChatGptButton: false,
             isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
-            "Stop Recording",
+            primaryButtonText: "Stop Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
             showDualActions: false,
@@ -262,11 +267,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: _viewState.SavedUsedMicrophone,
             publicContentUri: _viewState.PublicContentUri,
             publicDisplayFolder: _viewState.PublicDisplayFolder,
+            exportWarningMessage: _viewState.ExportWarningMessage,
             showSendToChatGptButton: false,
             isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
-            string.Empty,
+            primaryButtonText: string.Empty,
             showPrimaryButton: false,
             isPrimaryButtonEnabled: false,
             showDualActions: false,
@@ -301,10 +307,16 @@ public partial class MainPage : ContentPage
                 : $"{fileName}{Environment.NewLine}Saved to {stopResult.PublicDisplayFolder}"
             : string.IsNullOrWhiteSpace(stopResult.PrivateFilePath)
                 ? fileName
-                : $"{fileName}{Environment.NewLine}Recording saved, but export to Movies/ScreenTiger failed. The recording remains in app storage.";
+                : $"{fileName}{Environment.NewLine}Recording saved in app storage. Export to Movies/ScreenTiger failed.";
 
         bool hasSavedPath = !string.IsNullOrWhiteSpace(stopResult.SavedFilePath)
             || !string.IsNullOrWhiteSpace(stopResult.PrivateFilePath);
+
+        string? exportWarningMessage = stopResult.PublicExportSucceeded
+            ? null
+            : string.IsNullOrWhiteSpace(stopResult.PrivateFilePath)
+                ? "Recording stopped, but the MP4 file could not be found."
+                : "Recording saved in app storage. Export to Movies/ScreenTiger failed.";
 
         _viewState.SetState(
             RecordingUiState.Saved,
@@ -315,11 +327,12 @@ public partial class MainPage : ContentPage
             savedUsedMicrophone: _viewState.LatestRecordingUsedMicrophone,
             publicContentUri: stopResult.PublicContentUri,
             publicDisplayFolder: stopResult.PublicDisplayFolder,
+            exportWarningMessage: exportWarningMessage,
             showSendToChatGptButton: hasSavedPath,
             isSendToChatGptButtonEnabled: hasSavedPath,
             showViewMp4Button: hasSavedPath,
             isViewMp4ButtonEnabled: hasSavedPath,
-            "Start Recording",
+            primaryButtonText: "Start Recording",
             showPrimaryButton: true,
             isPrimaryButtonEnabled: true,
             showDualActions: false,
@@ -339,6 +352,7 @@ public partial class MainPage : ContentPage
         private bool? _savedUsedMicrophone;
         private string? _publicContentUri;
         private string? _publicDisplayFolder;
+        private string? _exportWarningMessage;
         private bool? _latestRecordingUsedMicrophone;
         private bool _showSendToChatGptButton;
         private bool _isSendToChatGptButtonEnabled;
@@ -415,6 +429,12 @@ public partial class MainPage : ContentPage
         {
             get => _savedUsedMicrophone;
             private set => SetProperty(ref _savedUsedMicrophone, value);
+        }
+
+        public string? ExportWarningMessage
+        {
+            get => _exportWarningMessage;
+            private set => SetProperty(ref _exportWarningMessage, value);
         }
 
         public string? PublicContentUri
@@ -498,6 +518,7 @@ public partial class MainPage : ContentPage
             bool? savedUsedMicrophone,
             string? publicContentUri,
             string? publicDisplayFolder,
+            string? exportWarningMessage,
             bool showSendToChatGptButton,
             bool isSendToChatGptButtonEnabled,
             bool showViewMp4Button,
@@ -519,6 +540,7 @@ public partial class MainPage : ContentPage
             SavedUsedMicrophone = savedUsedMicrophone;
             PublicContentUri = publicContentUri;
             PublicDisplayFolder = publicDisplayFolder;
+            ExportWarningMessage = exportWarningMessage;
             ShowSendToChatGptButton = showSendToChatGptButton;
             IsSendToChatGptButtonEnabled = isSendToChatGptButtonEnabled;
             ShowViewMp4Button = showViewMp4Button;

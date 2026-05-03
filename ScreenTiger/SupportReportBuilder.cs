@@ -10,7 +10,8 @@ public static class SupportReportBuilder
         TimeSpan? duration,
         bool? usedMicrophone,
         string? savedToLocation = null,
-        string? publicContentUri = null)
+        string? publicContentUri = null,
+        string? exportWarning = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
@@ -37,6 +38,7 @@ public static class SupportReportBuilder
             $"Saved file path: {filePath}",
             $"Saved to: {(string.IsNullOrWhiteSpace(savedToLocation) ? "Unknown" : savedToLocation)}",
             $"Public content URI: {(string.IsNullOrWhiteSpace(publicContentUri) ? "Unavailable" : publicContentUri)}",
+            $"Export warning: {(string.IsNullOrWhiteSpace(exportWarning) ? "None" : exportWarning)}",
             $"File size: {fileSizeText}",
             $"Duration: {durationText}",
             $"Audio mode: {audioMode}",
