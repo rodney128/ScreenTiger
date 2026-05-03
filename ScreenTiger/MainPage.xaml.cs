@@ -73,7 +73,7 @@ public partial class MainPage : ContentPage
         }
 
         string packageFileName = $"ScreenTiger_Package_{DateTime.UtcNow:yyyyMMdd_HHmmss}.zip";
-        const string packageDisplayFolder = "Movies/ScreenTiger";
+        const string packageDisplayFolder = "Download/ScreenTiger";
 
         string reportText = SupportReportBuilder.BuildCompactReport(
             _viewState.SavedFilePath,
@@ -107,13 +107,13 @@ public partial class MainPage : ContentPage
         string userMessage = sendResult.Outcome switch
         {
             AiAssistantLaunchOutcome.OpenedChatGpt => packageResult.IsSuccess
-                ? "ChatGPT opened. The AI report was copied to your clipboard. A recording package ZIP was saved to Movies/ScreenTiger."
+                ? "ChatGPT opened. The AI report was copied to your clipboard. A recording package ZIP was saved to Download/ScreenTiger."
                 : "ChatGPT opened. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package.",
             AiAssistantLaunchOutcome.ChatGptNotInstalled => packageResult.IsSuccess
-                ? "ChatGPT is not installed. The AI report was copied and the recording package was saved to Movies/ScreenTiger."
+                ? "ChatGPT is not installed. The AI report was copied and the recording package was saved to Download/ScreenTiger."
                 : "ChatGPT is not installed. The AI report was copied, but ScreenTiger could not create the ZIP package.",
             _ => packageResult.IsSuccess
-                ? "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. A recording package ZIP was saved to Movies/ScreenTiger."
+                ? "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. A recording package ZIP was saved to Download/ScreenTiger."
                 : "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package."
         };
 

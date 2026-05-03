@@ -18,7 +18,7 @@ public sealed partial class RecordingPackageBuilder
         ArgumentException.ThrowIfNullOrWhiteSpace(reportText);
         ArgumentException.ThrowIfNullOrWhiteSpace(packageFileName);
 
-        const string publicFolder = "Movies/ScreenTiger";
+        const string publicFolder = "Download/ScreenTiger";
 
         if (!System.IO.File.Exists(recordingFilePath))
         {
@@ -34,7 +34,7 @@ public sealed partial class RecordingPackageBuilder
         var values = new ContentValues();
         values.Put(MediaStore.MediaColumns.DisplayName, packageFileName);
         values.Put(MediaStore.MediaColumns.MimeType, "application/zip");
-        values.Put(MediaStore.MediaColumns.RelativePath, Path.Combine(Environment.DirectoryMovies, "ScreenTiger"));
+        values.Put(MediaStore.MediaColumns.RelativePath, Path.Combine(Environment.DirectoryDownloads, "ScreenTiger"));
         values.Put(MediaStore.MediaColumns.IsPending, 1);
 
         var zipUri = resolver.Insert(MediaStore.Downloads.ExternalContentUri, values);

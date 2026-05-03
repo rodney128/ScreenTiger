@@ -30,7 +30,7 @@ public sealed partial class RecordingPackageBuilder
         string packageFileName,
         CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(RecordingPackageResult.Failure(packageFileName, "Movies/ScreenTiger", "Recording package ZIP is only supported on Android."));
+        return Task.FromResult(RecordingPackageResult.Failure(packageFileName, "Download/ScreenTiger", "Recording package ZIP is only supported on Android."));
     }
 }
 #endif
