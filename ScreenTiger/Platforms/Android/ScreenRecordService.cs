@@ -33,6 +33,7 @@ public sealed class ScreenRecordService : Service
     private bool _isFinalizing;
     private bool _microphoneEnabled;
     private string? _activeSessionRequestId;
+    private string? _privateOutputFilePath;
     private DateTimeOffset _startedAtUtc;
     private RecordingExportResult? _exportResult;
 
@@ -134,6 +135,8 @@ public sealed class ScreenRecordService : Service
             {
                 CleanupResources();
                 StopForeground(StopForegroundFlags.Remove);
+                _privateOutputFilePath = null;
+                _exportResult = null;
                 ScreenRecordingController.NotifyStartFailed(requestId, $"Unable to start recording: {ex.Message}");
                 StopSelf();
             }
@@ -194,16 +197,50 @@ public sealed class ScreenRecordService : Service
         }
 
         var duration = DateTimeOffset.UtcNow - _startedAtUtc;
-        var privatePathBeforeExport = _exportResult?.PrivateFilePath;
-        bool privateFileExistsBeforeExport = !string.IsNullOrWhiteSpace(privatePathBeforeExport) && System.IO.File.Exists(privatePathBeforeExport);
-        System.Diagnostics.Debug.WriteLine($"ScreenTiger export: privatePath='{privatePathBeforeExport}', privateExists={privateFileExistsBeforeExport}");
+        var privateFilePath = _privateOutputFilePath;
+        bool privateFileExists = !string.IsNullOrWhiteSpace(privateFilePath) && System.IO.File.Exists(privateFilePath);
+        System.Diagnostics.Debug.WriteLine($"ScreenTiger export: privatePath='{privateFilePath}', privateExists={privateFileExists}");
 
-        if (_exportResult?.PrivateFilePath is { Length: > 0 } privateFilePath)
+        if (!privateFileExists)
         {
-            _exportResult = ExportToPublicVideos(privateFilePath);
-            System.Diagnostics.Debug.WriteLine(
-                $"ScreenTiger export: success={_exportResult.PublicExportSucceeded}, publicUri='{_exportResult.PublicContentUri}', publicFolder='{_exportResult.PublicDisplayFolder}', error='{_exportResult.ErrorMessage}'");
+            CleanupResources();
+
+            lock (_sync)
+            {
+                _isRecording = false;
+                _isFinalizing = false;
+                _activeSessionRequestId = null;
+                _microphoneEnabled = false;
+                _startedAtUtc = DateTimeOffset.MinValue;
+            }
+
+            StopForegroundCompat();
+
+            if (notifyController)
+            {
+                ScreenRecordingController.NotifyStopFailed(requestId, "Recording stopped, but the MP4 file could not be found.");
+            }
+
+            lock (_sync)
+            {
+                _privateOutputFilePath = null;
+                _exportResult = null;
+            }
+
+            StopSelf();
+            return;
         }
+
+        _exportResult = ExportToPublicVideos(privateFilePath!);
+        System.Diagnostics.Debug.WriteLine(
+            $"ScreenTiger export: success={_exportResult.PublicExportSucceeded}, publicUri='{_exportResult.PublicContentUri}', publicFolder='{_exportResult.PublicDisplayFolder}', error='{_exportResult.ErrorMessage}'");
+
+        var resultPrivateFilePath = _exportResult.PrivateFilePath;
+        var resultPublicContentUri = _exportResult.PublicContentUri;
+        var resultPublicDisplayFolder = _exportResult.PublicDisplayFolder;
+        var resultFileName = _exportResult.FileName;
+        var resultPublicExportSucceeded = _exportResult.PublicExportSucceeded;
+        var resultErrorMessage = _exportResult.ErrorMessage;
 
         CleanupResources();
 
@@ -222,13 +259,19 @@ public sealed class ScreenRecordService : Service
         {
             ScreenRecordingController.NotifyStopCompleted(
                 requestId,
-                _exportResult?.PrivateFilePath,
-                _exportResult?.PublicContentUri,
-                _exportResult?.PublicDisplayFolder,
-                _exportResult?.FileName,
-                _exportResult?.PublicExportSucceeded ?? false,
-                _exportResult?.ErrorMessage,
+                resultPrivateFilePath,
+                resultPublicContentUri,
+                resultPublicDisplayFolder,
+                resultFileName,
+                resultPublicExportSucceeded,
+                resultErrorMessage,
                 duration);
+        }
+
+        lock (_sync)
+        {
+            _privateOutputFilePath = null;
+            _exportResult = null;
         }
 
         StopSelf();
@@ -259,13 +302,7 @@ public sealed class ScreenRecordService : Service
         }
 
         var outputFilePath = CreateOutputFilePath();
-        _exportResult = new RecordingExportResult(
-            false,
-            outputFilePath,
-            null,
-            "Movies/ScreenTiger",
-            Path.GetFileName(outputFilePath),
-            null);
+        _privateOutputFilePath = outputFilePath;
 
         _mediaRecorder = new MediaRecorder(this);
         _mediaRecorder.SetVideoSource(VideoSource.Surface);
@@ -307,7 +344,6 @@ public sealed class ScreenRecordService : Service
             throw new InvalidOperationException("Unable to create virtual display for recording.");
         }
 
-        _exportResult = null;
         _mediaRecorder.Start();
     }
 
