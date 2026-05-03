@@ -8,6 +8,7 @@ public partial class MainPage : ContentPage
 {
     private readonly ScreenRecordingController _recordingController = new();
     private readonly RecordingFileViewer _recordingFileViewer = new();
+    private readonly AiAssistantLauncher _aiAssistantLauncher = new();
     private readonly MainPageViewState _viewState = new();
 
     public MainPage()
@@ -52,6 +53,39 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void OnSendToChatGptClicked(object? sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_viewState.SavedFilePath))
+        {
+            await DisplayAlertAsync("ScreenTiger", "No saved recording is available to send.", "OK");
+            return;
+        }
+
+        if (!File.Exists(_viewState.SavedFilePath))
+        {
+            await DisplayAlertAsync("ScreenTiger", "The saved MP4 could not be found. Record again and try Send to ChatGPT.", "OK");
+            return;
+        }
+
+        string reportText = SupportReportBuilder.BuildCompactReport(
+            _viewState.SavedFilePath,
+            _viewState.SavedDuration,
+            _viewState.SavedUsedMicrophone);
+
+        try
+        {
+            await Clipboard.SetTextAsync(reportText);
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlertAsync("ScreenTiger", $"Could not copy the AI report to clipboard: {ex.Message}", "OK");
+            return;
+        }
+
+        var sendResult = await _aiAssistantLauncher.SendToChatGptAsync(_viewState.SavedFilePath, reportText, CancellationToken.None);
+        await DisplayAlertAsync("ScreenTiger", sendResult.Message, "OK");
+    }
+
     private async Task StartRecordingAsync()
     {
         SetStartingState();
@@ -66,6 +100,7 @@ public partial class MainPage : ContentPage
         }
 
         SetRecordingState(startResult.IsMicrophoneEnabled);
+        _viewState.LatestRecordingUsedMicrophone = startResult.IsMicrophoneEnabled;
     }
 
     private async Task StopRecordingAsync()
@@ -117,6 +152,10 @@ public partial class MainPage : ContentPage
             "Record your screen and package the result for AI review.",
             string.Empty,
             savedFilePath: null,
+            savedDuration: null,
+            savedUsedMicrophone: null,
+            showSendToChatGptButton: false,
+            isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
             "Start Recording",
@@ -136,6 +175,10 @@ public partial class MainPage : ContentPage
             "Android will ask for permission to capture your screen.",
             "Microphone audio is included when permission is granted. Internal app audio is not captured.",
             savedFilePath: null,
+            savedDuration: null,
+            savedUsedMicrophone: null,
+            showSendToChatGptButton: false,
+            isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
             string.Empty,
@@ -155,6 +198,10 @@ public partial class MainPage : ContentPage
             "Preparing Android screen capture...",
             string.Empty,
             savedFilePath: null,
+            savedDuration: null,
+            savedUsedMicrophone: null,
+            showSendToChatGptButton: false,
+            isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
             string.Empty,
@@ -174,6 +221,10 @@ public partial class MainPage : ContentPage
             "Recording in progress",
             "ScreenTiger is recording your screen.",
             savedFilePath: null,
+            savedDuration: null,
+            savedUsedMicrophone: null,
+            showSendToChatGptButton: false,
+            isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
             "Stop Recording",
@@ -193,6 +244,10 @@ public partial class MainPage : ContentPage
             "Stopping recording...",
             "Finalizing video file.",
             savedFilePath: _viewState.SavedFilePath,
+            savedDuration: _viewState.SavedDuration,
+            savedUsedMicrophone: _viewState.SavedUsedMicrophone,
+            showSendToChatGptButton: false,
+            isSendToChatGptButtonEnabled: false,
             showViewMp4Button: false,
             isViewMp4ButtonEnabled: false,
             string.Empty,
@@ -218,6 +273,10 @@ public partial class MainPage : ContentPage
             "Recording saved",
             fileName,
             savedFilePath: stopResult.SavedFilePath,
+            savedDuration: stopResult.Duration,
+            savedUsedMicrophone: _viewState.LatestRecordingUsedMicrophone,
+            showSendToChatGptButton: hasSavedPath,
+            isSendToChatGptButtonEnabled: hasSavedPath,
             showViewMp4Button: hasSavedPath,
             isViewMp4ButtonEnabled: hasSavedPath,
             "Start Recording",
@@ -236,6 +295,11 @@ public partial class MainPage : ContentPage
         private string _titleText = string.Empty;
         private string _detailText = string.Empty;
         private string? _savedFilePath;
+        private TimeSpan? _savedDuration;
+        private bool? _savedUsedMicrophone;
+        private bool? _latestRecordingUsedMicrophone;
+        private bool _showSendToChatGptButton;
+        private bool _isSendToChatGptButtonEnabled;
         private bool _showViewMp4Button;
         private bool _isViewMp4ButtonEnabled;
         private string _primaryButtonText = string.Empty;
@@ -281,10 +345,40 @@ public partial class MainPage : ContentPage
             private set => SetProperty(ref _primaryButtonText, value);
         }
 
+        public bool ShowSendToChatGptButton
+        {
+            get => _showSendToChatGptButton;
+            private set => SetProperty(ref _showSendToChatGptButton, value);
+        }
+
+        public bool IsSendToChatGptButtonEnabled
+        {
+            get => _isSendToChatGptButtonEnabled;
+            private set => SetProperty(ref _isSendToChatGptButtonEnabled, value);
+        }
+
         public string? SavedFilePath
         {
             get => _savedFilePath;
             private set => SetProperty(ref _savedFilePath, value);
+        }
+
+        public TimeSpan? SavedDuration
+        {
+            get => _savedDuration;
+            private set => SetProperty(ref _savedDuration, value);
+        }
+
+        public bool? SavedUsedMicrophone
+        {
+            get => _savedUsedMicrophone;
+            private set => SetProperty(ref _savedUsedMicrophone, value);
+        }
+
+        public bool? LatestRecordingUsedMicrophone
+        {
+            get => _latestRecordingUsedMicrophone;
+            set => SetProperty(ref _latestRecordingUsedMicrophone, value);
         }
 
         public bool ShowViewMp4Button
@@ -346,6 +440,10 @@ public partial class MainPage : ContentPage
             string title,
             string detail,
             string? savedFilePath,
+            TimeSpan? savedDuration,
+            bool? savedUsedMicrophone,
+            bool showSendToChatGptButton,
+            bool isSendToChatGptButtonEnabled,
             bool showViewMp4Button,
             bool isViewMp4ButtonEnabled,
             string primaryButtonText,
@@ -361,6 +459,10 @@ public partial class MainPage : ContentPage
             TitleText = title;
             DetailText = detail;
             SavedFilePath = savedFilePath;
+            SavedDuration = savedDuration;
+            SavedUsedMicrophone = savedUsedMicrophone;
+            ShowSendToChatGptButton = showSendToChatGptButton;
+            IsSendToChatGptButtonEnabled = isSendToChatGptButtonEnabled;
             ShowViewMp4Button = showViewMp4Button;
             IsViewMp4ButtonEnabled = isViewMp4ButtonEnabled;
             PrimaryButtonText = primaryButtonText;

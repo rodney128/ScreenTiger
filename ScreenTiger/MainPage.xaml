@@ -82,22 +82,33 @@
                 </Grid>
 
                 <Button
-                    Clicked="OnViewMp4Clicked"
+                    Clicked="OnPrimaryActionClicked"
                     HorizontalOptions="Fill"
-                    IsVisible="{Binding ShowViewMp4Button}"
-                    IsEnabled="{Binding IsViewMp4ButtonEnabled}"
-                    Text="View MP4"
+                    IsVisible="{Binding ShowPrimaryButton}"
+                    IsEnabled="{Binding IsPrimaryButtonEnabled}"
+                    Text="{Binding PrimaryButtonText}"
                     BackgroundColor="#17171C"
                     BorderColor="#D4AF37"
                     BorderWidth="1"
                     TextColor="#D4AF37" />
 
                 <Button
-                    Clicked="OnPrimaryActionClicked"
+                    Clicked="OnSendToChatGptClicked"
                     HorizontalOptions="Fill"
-                    IsVisible="{Binding ShowPrimaryButton}"
-                    IsEnabled="{Binding IsPrimaryButtonEnabled}"
-                    Text="{Binding PrimaryButtonText}"
+                    IsVisible="{Binding ShowSendToChatGptButton}"
+                    IsEnabled="{Binding IsSendToChatGptButtonEnabled}"
+                    Text="Send to ChatGPT"
+                    BackgroundColor="#17171C"
+                    BorderColor="#D4AF37"
+                    BorderWidth="1"
+                    TextColor="#D4AF37" />
+
+                <Button
+                    Clicked="OnViewMp4Clicked"
+                    HorizontalOptions="Fill"
+                    IsVisible="{Binding ShowViewMp4Button}"
+                    IsEnabled="{Binding IsViewMp4ButtonEnabled}"
+                    Text="View MP4"
                     BackgroundColor="#17171C"
                     BorderColor="#D4AF37"
                     BorderWidth="1"
