@@ -31,7 +31,7 @@
 		<ApplicationTitle>ScreenTiger</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.screentiger</ApplicationId>
+      <ApplicationId>com.rgwautomation.screentiger</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
