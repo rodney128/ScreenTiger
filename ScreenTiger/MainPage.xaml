@@ -2,69 +2,91 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ScreenTiger.MainPage"
-             BackgroundColor="#11111B">
+             BackgroundColor="#151325">
 
-    <Grid Padding="20">
-        <Border
-            BackgroundColor="#1E1E2E"
-            StrokeThickness="0"
-            Padding="20"
-            VerticalOptions="Center"
-            HorizontalOptions="Fill">
-            <Border.StrokeShape>
-                <RoundRectangle CornerRadius="18" />
-            </Border.StrokeShape>
+    <ScrollView>
+        <Grid Padding="24">
+            <Border
+                BackgroundColor="#221F36"
+                Stroke="#3B355C"
+                StrokeThickness="1"
+                Padding="24"
+                VerticalOptions="Center"
+                HorizontalOptions="Fill">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
 
-            <VerticalStackLayout Spacing="14">
-                <BoxView
-                    HeightRequest="4"
-                    WidthRequest="72"
-                    HorizontalOptions="Start"
-                    Color="#F4A261" />
+                <VerticalStackLayout Spacing="14">
+                    <Label
+                        x:Name="PageTitleLabel"
+                        Text="ScreenTiger"
+                        FontSize="34"
+                        FontAttributes="Bold"
+                        TextColor="#F2EEFF"
+                        SemanticProperties.HeadingLevel="Level1" />
 
-                <Label
-                    Text="ScreenTiger"
-                    FontSize="32"
-                    FontAttributes="Bold"
-                    TextColor="#F8F8FF"
-                    SemanticProperties.HeadingLevel="Level1" />
+                    <Label
+                        x:Name="SubtitleLabel"
+                        Text="Record your screen and package the result for AI review."
+                        FontSize="16"
+                        TextColor="#DDD4FF"
+                        LineBreakMode="WordWrap" />
 
-                <Label
-                    Text="Record your Android screen and share the MP4 with ChatGPT for review."
-                    FontSize="16"
-                    TextColor="#D9D9E8"
-                    LineBreakMode="WordWrap" />
+                    <Label
+                        x:Name="BodyLabel"
+                        Text=""
+                        FontSize="14"
+                        TextColor="#CFC7E6"
+                        LineBreakMode="WordWrap" />
 
-                <Label
-                    Text="Capture app issues, UI problems, and workflow bugs so they can be reviewed with an AI assistant or support person."
-                    FontSize="14"
-                    TextColor="#C6C6D6"
-                    LineBreakMode="WordWrap" />
+                    <ActivityIndicator
+                        x:Name="StateActivityIndicator"
+                        IsVisible="False"
+                        IsRunning="False"
+                        Color="#C8B5FF"
+                        HorizontalOptions="Center" />
 
-                <Button
-                    Text="Start Recording"
-                    Clicked="OnStartRecordingClicked"
-                    BackgroundColor="#B79CFF"
-                    TextColor="#1B1235"
-                    CornerRadius="14"
-                    HeightRequest="52"
-                    FontAttributes="Bold"
-                    HorizontalOptions="Fill" />
+                    <Button
+                        x:Name="PrimaryButton"
+                        Text="Start Recording"
+                        Clicked="OnPrimaryButtonClicked"
+                        BackgroundColor="#C3AEFF"
+                        TextColor="#22183D"
+                        CornerRadius="12"
+                        HeightRequest="52"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Fill" />
 
-                <Label
-                    x:Name="StatusLabel"
-                    Text="Clean baseline ready."
-                    FontSize="14"
-                    TextColor="#E7E3FF"
-                    LineBreakMode="WordWrap" />
+                    <Button
+                        x:Name="SecondaryButton"
+                        IsVisible="False"
+                        Clicked="OnSecondaryButtonClicked"
+                        BackgroundColor="#2A2543"
+                        TextColor="#E7DDFF"
+                        BorderColor="#4A416E"
+                        BorderWidth="1"
+                        CornerRadius="12"
+                        HeightRequest="48"
+                        FontAttributes="Bold"
+                        HorizontalOptions="Fill" />
 
-                <Label
-                    Text="Microphone permission will only be requested when recording starts. If permission is denied, ScreenTiger will continue video-only."
-                    FontSize="13"
-                    TextColor="#C9C9D8"
-                    LineBreakMode="WordWrap" />
-            </VerticalStackLayout>
-        </Border>
-    </Grid>
+                    <Label
+                        x:Name="MicrophoneNoteLabel"
+                        Text="Microphone audio is included when permission is granted. Internal app audio is not captured."
+                        FontSize="13"
+                        TextColor="#C0B7DA"
+                        LineBreakMode="WordWrap" />
+
+                    <Label
+                        x:Name="StatusLabel"
+                        Text="Clean baseline ready."
+                        FontSize="13"
+                        TextColor="#E8DCFF"
+                        LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
 
 </ContentPage>
