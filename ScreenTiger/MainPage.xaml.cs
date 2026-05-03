@@ -63,7 +63,7 @@ public partial class MainPage : ContentPage
 
         if (!File.Exists(_viewState.SavedFilePath))
         {
-            await DisplayAlertAsync("ScreenTiger", "The saved MP4 could not be found. Record again and try Send to ChatGPT.", "OK");
+            await DisplayAlertAsync("ScreenTiger", "The saved MP4 could not be found. Record again and try Open ChatGPT.", "OK");
             return;
         }
 
