@@ -22,13 +22,13 @@ public sealed partial class RecordingPackageBuilder
 
         if (!System.IO.File.Exists(recordingFilePath))
         {
-            return RecordingPackageResult.Failure(packageFileName, publicFolder, "The saved MP4 could not be found.");
+            return RecordingPackageResult.Failure(packageFileName, publicFolder, null, "The saved MP4 could not be found.");
         }
 
         var resolver = Android.App.Application.Context.ContentResolver;
         if (resolver is null)
         {
-            return RecordingPackageResult.Failure(packageFileName, publicFolder, "Unable to access Android ContentResolver for ZIP export.");
+            return RecordingPackageResult.Failure(packageFileName, publicFolder, null, "Unable to access Android ContentResolver for ZIP export.");
         }
 
         var values = new ContentValues();
@@ -40,7 +40,7 @@ public sealed partial class RecordingPackageBuilder
         var zipUri = resolver.Insert(MediaStore.Downloads.ExternalContentUri, values);
         if (zipUri is null)
         {
-            return RecordingPackageResult.Failure(packageFileName, publicFolder, "Unable to create ZIP package entry in MediaStore.");
+            return RecordingPackageResult.Failure(packageFileName, publicFolder, null, "Unable to create ZIP package entry in MediaStore.");
         }
 
         try
@@ -70,7 +70,7 @@ public sealed partial class RecordingPackageBuilder
             completeValues.Put(MediaStore.MediaColumns.IsPending, 0);
             resolver.Update(zipUri, completeValues, null, null);
 
-            return RecordingPackageResult.Success(packageFileName, publicFolder);
+            return RecordingPackageResult.Success(packageFileName, publicFolder, zipUri.ToString());
         }
         catch (Exception ex)
         {
@@ -82,7 +82,7 @@ public sealed partial class RecordingPackageBuilder
             {
             }
 
-            return RecordingPackageResult.Failure(packageFileName, publicFolder, ex.Message);
+            return RecordingPackageResult.Failure(packageFileName, publicFolder, zipUri.ToString(), ex.Message);
         }
     }
 }

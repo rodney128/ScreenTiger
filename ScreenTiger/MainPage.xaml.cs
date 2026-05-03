@@ -102,19 +102,54 @@ public partial class MainPage : ContentPage
             packageFileName,
             CancellationToken.None);
 
-        var sendResult = await _aiAssistantLauncher.OpenChatGptAsync(_viewState.SavedFilePath, reportText, CancellationToken.None);
-
-        string userMessage = sendResult.Outcome switch
+        if (!packageResult.IsSuccess)
         {
-            AiAssistantLaunchOutcome.OpenedChatGpt => packageResult.IsSuccess
-                ? "ChatGPT opened. The AI report was copied to your clipboard. A recording package ZIP was saved to Download/ScreenTiger."
-                : "ChatGPT opened. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package.",
-            AiAssistantLaunchOutcome.ChatGptNotInstalled => packageResult.IsSuccess
-                ? "ChatGPT is not installed. The AI report was copied and the recording package was saved to Download/ScreenTiger."
-                : "ChatGPT is not installed. The AI report was copied, but ScreenTiger could not create the ZIP package.",
-            _ => packageResult.IsSuccess
-                ? "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. A recording package ZIP was saved to Download/ScreenTiger."
-                : "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard, but ScreenTiger could not create the ZIP package."
+            var fallbackLaunchResult = await _aiAssistantLauncher.OpenChatGptAppAsync(CancellationToken.None);
+            string zipErrorMessage = string.IsNullOrWhiteSpace(packageResult.ErrorMessage)
+                ? "Unknown error."
+                : packageResult.ErrorMessage;
+
+            string zipFailureMessage = $"The recording package ZIP could not be created: {zipErrorMessage}";
+            string fallbackMessage = fallbackLaunchResult.Outcome switch
+            {
+                AiAssistantLaunchOutcome.OpenedChatGpt => "ChatGPT opened. The AI report was copied to your clipboard.",
+                AiAssistantLaunchOutcome.ChatGptNotInstalled => "ChatGPT is not installed. The AI report was copied and the ZIP package was saved to Download/ScreenTiger.",
+                _ => "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard."
+            };
+
+            await DisplayAlertAsync("ScreenTiger", $"{zipFailureMessage}{Environment.NewLine}{fallbackMessage}", "OK");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(packageResult.PackageContentUri))
+        {
+            var fallbackLaunchResult = await _aiAssistantLauncher.OpenChatGptAppAsync(CancellationToken.None);
+            string fallbackMessage = fallbackLaunchResult.Outcome switch
+            {
+                AiAssistantLaunchOutcome.OpenedChatGpt => "ChatGPT opened. The AI report was copied to your clipboard. The ZIP package was saved to Download/ScreenTiger.",
+                AiAssistantLaunchOutcome.ChatGptNotInstalled => "ChatGPT is not installed. The AI report was copied and the ZIP package was saved to Download/ScreenTiger.",
+                _ => "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. The ZIP package was saved to Download/ScreenTiger."
+            };
+
+            await DisplayAlertAsync("ScreenTiger", fallbackMessage, "OK");
+            return;
+        }
+
+        var sendResult = await _aiAssistantLauncher.OpenChatGptAsync(packageResult.PackageContentUri, reportText, CancellationToken.None);
+
+        if (sendResult.Outcome == AiAssistantLaunchOutcome.OpenedChatGpt)
+        {
+            await DisplayAlertAsync("ScreenTiger", "ChatGPT opened with the ScreenTiger ZIP package. Tap Send if the package appears.", "OK");
+            return;
+        }
+
+        var directOpenResult = await _aiAssistantLauncher.OpenChatGptAppAsync(CancellationToken.None);
+
+        string userMessage = directOpenResult.Outcome switch
+        {
+            AiAssistantLaunchOutcome.OpenedChatGpt => "ChatGPT opened. The AI report was copied to your clipboard. The ZIP package was saved to Download/ScreenTiger.",
+            AiAssistantLaunchOutcome.ChatGptNotInstalled => "ChatGPT is not installed. The AI report was copied and the ZIP package was saved to Download/ScreenTiger.",
+            _ => "ScreenTiger could not open ChatGPT. The AI report was copied to your clipboard. The ZIP package was saved to Download/ScreenTiger."
         };
 
         await DisplayAlertAsync("ScreenTiger", userMessage, "OK");

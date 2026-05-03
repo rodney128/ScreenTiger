@@ -21,13 +21,19 @@ public sealed record AiAssistantLaunchResult(AiAssistantLaunchOutcome Outcome, s
 
 public sealed partial class AiAssistantLauncher
 {
-    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string filePath, string reportText, CancellationToken cancellationToken);
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string zipContentUri, string reportText, CancellationToken cancellationToken);
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAppAsync(CancellationToken cancellationToken);
 }
 
 #if !ANDROID
 public sealed partial class AiAssistantLauncher
 {
-    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string filePath, string reportText, CancellationToken cancellationToken)
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string zipContentUri, string reportText, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(AiAssistantLaunchResult.Failure());
+    }
+
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAppAsync(CancellationToken cancellationToken)
     {
         return Task.FromResult(AiAssistantLaunchResult.Failure());
     }

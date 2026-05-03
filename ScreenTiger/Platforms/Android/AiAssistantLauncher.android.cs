@@ -7,30 +7,72 @@ public sealed partial class AiAssistantLauncher
 {
     private const string ChatGptPackageName = "com.openai.chatgpt";
 
-    public partial async Task<AiAssistantLaunchResult> OpenChatGptAsync(string filePath, string reportText, CancellationToken cancellationToken)
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAsync(string zipContentUri, string reportText, CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(zipContentUri);
         ArgumentException.ThrowIfNullOrWhiteSpace(reportText);
 
+        var context = Platform.AppContext;
+        var packageManager = context.PackageManager;
+        var zipUri = Android.Net.Uri.Parse(zipContentUri);
+
+        if (zipUri is null)
+        {
+            return Task.FromResult(AiAssistantLaunchResult.Failure());
+        }
+
+        var intent = new Intent(Intent.ActionSend);
+        intent.SetPackage(ChatGptPackageName);
+        intent.SetType("application/zip");
+        intent.PutExtra(Intent.ExtraStream, zipUri);
+        intent.PutExtra(Intent.ExtraText, reportText);
+        intent.AddFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.NewTask);
+        intent.ClipData = ClipData.NewUri(context.ContentResolver, "ScreenTiger recording package", zipUri);
+
+        if (intent.ResolveActivity(packageManager) is null)
+        {
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptNotInstalled());
+        }
+
+        try
+        {
+            context.StartActivity(intent);
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptOpened());
+        }
+        catch (ActivityNotFoundException)
+        {
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptNotInstalled());
+        }
+        catch
+        {
+            return Task.FromResult(AiAssistantLaunchResult.Failure());
+        }
+    }
+
+    public partial Task<AiAssistantLaunchResult> OpenChatGptAppAsync(CancellationToken cancellationToken)
+    {
         var context = Platform.AppContext;
         var packageManager = context.PackageManager;
 
         var launchIntent = packageManager?.GetLaunchIntentForPackage(ChatGptPackageName);
         if (launchIntent is null)
         {
-            return AiAssistantLaunchResult.ChatGptNotInstalled();
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptNotInstalled());
         }
 
         try
         {
             launchIntent.AddFlags(ActivityFlags.NewTask);
             context.StartActivity(launchIntent);
-            await Task.CompletedTask.ConfigureAwait(false);
-            return AiAssistantLaunchResult.ChatGptOpened();
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptOpened());
         }
         catch (ActivityNotFoundException)
         {
-            return AiAssistantLaunchResult.Failure();
+            return Task.FromResult(AiAssistantLaunchResult.ChatGptNotInstalled());
+        }
+        catch
+        {
+            return Task.FromResult(AiAssistantLaunchResult.Failure());
         }
     }
 }
