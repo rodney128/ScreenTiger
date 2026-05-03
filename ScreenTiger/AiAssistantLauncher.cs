@@ -2,17 +2,23 @@ namespace ScreenTiger;
 
 public enum AiAssistantLaunchOutcome
 {
-    OpenedChatGptDirect,
+    OpenedChatGptAndSent,
+    OpenedChatGptWithoutAttachment,
     ChatGptNotInstalled,
     Failed
 }
 
 public sealed record AiAssistantLaunchResult(AiAssistantLaunchOutcome Outcome, string Message)
 {
-    public static AiAssistantLaunchResult ChatGptDirectOpened() =>
+    public static AiAssistantLaunchResult ChatGptOpenedAndSent() =>
         new(
-            AiAssistantLaunchOutcome.OpenedChatGptDirect,
-            "ChatGPT opened. The AI report was copied to your clipboard. Paste it into ChatGPT. Use View MP4 to confirm the recording if needed.");
+            AiAssistantLaunchOutcome.OpenedChatGptAndSent,
+            "ChatGPT opened. ScreenTiger sent the AI report and recording. Tap Send if they appear.");
+
+    public static AiAssistantLaunchResult ChatGptOpenedWithoutAttachment() =>
+        new(
+            AiAssistantLaunchOutcome.OpenedChatGptWithoutAttachment,
+            "ChatGPT opened. The AI report was copied to your clipboard. Paste it into ChatGPT. The recording could not be attached automatically.");
 
     public static AiAssistantLaunchResult ChatGptNotInstalled() =>
         new(
