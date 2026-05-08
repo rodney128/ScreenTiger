@@ -1,3 +1,5 @@
+namespace ScreenTiger;
+
 public sealed partial class RecordingPackageBuilder
 {
     /// <summary>
@@ -12,6 +14,7 @@ public sealed partial class RecordingPackageBuilder
 
 public sealed partial class RecordingPackageBuilder
 {
+#if !ANDROID
     public partial Task<RecordingPackageResult> CreatePackageAsync(
         string recordingFilePath,
         string reportText,
@@ -20,6 +23,7 @@ public sealed partial class RecordingPackageBuilder
     {
         return Task.FromResult(RecordingPackageResult.Failure(packageFileName, "Download/ScreenTiger", null, "Recording package ZIP is only supported on Android."));
     }
+#endif
 }
 
 public sealed record RecordingPackageResult(
