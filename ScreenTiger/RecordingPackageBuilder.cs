@@ -1,14 +1,3 @@
-namespace ScreenTiger;
-
-public sealed record RecordingPackageResult(bool IsSuccess, string PackageFileName, string PackageDisplayFolder, string? ErrorMessage = null)
-{
-    public static RecordingPackageResult Success(string packageFileName, string packageDisplayFolder) =>
-        new(true, packageFileName, packageDisplayFolder);
-
-    public static RecordingPackageResult Failure(string packageFileName, string packageDisplayFolder, string errorMessage) =>
-        new(false, packageFileName, packageDisplayFolder, errorMessage);
-}
-
 public sealed partial class RecordingPackageBuilder
 {
     /// <summary>
@@ -21,7 +10,6 @@ public sealed partial class RecordingPackageBuilder
         CancellationToken cancellationToken = default);
 }
 
-#if !ANDROID
 public sealed partial class RecordingPackageBuilder
 {
     public partial Task<RecordingPackageResult> CreatePackageAsync(
@@ -33,4 +21,17 @@ public sealed partial class RecordingPackageBuilder
         return Task.FromResult(RecordingPackageResult.Failure(packageFileName, "Download/ScreenTiger", null, "Recording package ZIP is only supported on Android."));
     }
 }
-#endif
+
+public sealed record RecordingPackageResult(
+    bool IsSuccess,
+    string PackageFileName,
+    string PackageDisplayFolder,
+    string? PackageContentUri = null,
+    string? ErrorMessage = null)
+{
+    public static RecordingPackageResult Success(string packageFileName, string packageDisplayFolder, string? packageContentUri) =>
+        new(true, packageFileName, packageDisplayFolder, packageContentUri);
+
+    public static RecordingPackageResult Failure(string packageFileName, string packageDisplayFolder, string? packageContentUri, string errorMessage) =>
+        new(false, packageFileName, packageDisplayFolder, packageContentUri, errorMessage);
+}

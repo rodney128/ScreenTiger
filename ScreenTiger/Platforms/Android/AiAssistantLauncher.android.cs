@@ -16,11 +16,6 @@ public sealed partial class AiAssistantLauncher
         var packageManager = context.PackageManager;
         var zipUri = Android.Net.Uri.Parse(zipContentUri);
 
-        if (zipUri is null)
-        {
-            return Task.FromResult(AiAssistantLaunchResult.Failure());
-        }
-
         var intent = new Intent(Intent.ActionSend);
         intent.SetPackage(ChatGptPackageName);
         intent.SetType("application/zip");

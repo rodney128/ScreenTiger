@@ -13,7 +13,12 @@
 				android:name="android.support.FILE_PROVIDER_PATHS"
 				android:resource="@xml/screentiger_file_paths" />
 		</provider>
-	</application>
+
+		<service
+			android:name=".ScreenRecordService"
+			android:exported="false"
+			android:foregroundServiceType="mediaProjection" />
+    </application>
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
